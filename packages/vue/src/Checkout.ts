@@ -20,21 +20,19 @@ import {
 /**
  * Props accepted by the Inttegro {@link Checkout} component.
  *
- * Changing `features`, `orderId`, `presentation`, `timeout`, or `title`
- * replaces the hosted controller. Changing `appearance` or `locale` updates it
- * in place, preserving payer progress where the hosted flow permits.
+ * Changing `features`, the Checkout reference, `presentation`, `timeout`, or
+ * `title` replaces the hosted controller. Changing `appearance` or `locale`
+ * updates it in place, preserving payer progress where the hosted flow permits.
  *
  * @category Vue
  */
-export interface CheckoutProps {
+interface CheckoutPropsBase {
   /** Initial and reactive theme preference for hosted Checkout. */
   appearance?: CheckoutAppearance | undefined
   /** Hosted Checkout content and actions. Changing it replaces the controller. */
   features?: CheckoutFeatures | undefined
   /** Initial and reactive BCP 47 locale preference. */
   locale?: string | undefined
-  /** Client-safe reference for the finalized Order being paid. */
-  orderId: string
   /** Displays Checkout inline by default or in an Inttegro-managed modal. */
   presentation?: CheckoutPresentation | undefined
   /** Mount timeout from 1,000–60,000 ms; defaults to 15,000 ms. */
@@ -42,6 +40,12 @@ export interface CheckoutProps {
   /** Accessible iframe title; defaults to `Checkout`. */
   title?: string | undefined
 }
+
+export type CheckoutProps = CheckoutPropsBase &
+  (
+    | { orderId: string; purchaseIntentId?: never }
+    | { orderId?: never; purchaseIntentId: string }
+  )
 
 /**
  * Imperative operations exposed by {@link Checkout} through a Vue template ref.
@@ -103,7 +107,8 @@ export const Checkout = defineComponent({
     appearance: Object as PropType<CheckoutAppearance>,
     features: Object as PropType<CheckoutFeatures>,
     locale: String,
-    orderId: { type: String, required: true },
+    orderId: String,
+    purchaseIntentId: String,
     presentation: {
       type: String as PropType<CheckoutPresentation>,
       default: 'embedded',
@@ -147,6 +152,7 @@ export const Checkout = defineComponent({
             features: props.features,
             locale: props.locale,
             orderId: props.orderId,
+            purchaseIntentId: props.purchaseIntentId,
             timeout: props.timeout,
             title: props.title,
           }),
@@ -186,6 +192,7 @@ export const Checkout = defineComponent({
       () => [
         props.features,
         props.orderId,
+        props.purchaseIntentId,
         props.presentation,
         props.timeout,
         props.title,

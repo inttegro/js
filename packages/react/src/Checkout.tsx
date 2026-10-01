@@ -17,14 +17,14 @@ import {
 /**
  * Props for {@link Checkout}.
  *
- * `features`, `orderId`, `presentation`, `timeout`, and `title` identify the
- * experience. Changing one replaces the underlying controller. `appearance`
- * and `locale` update the existing controller without discarding payer
- * progress.
+ * `features`, the Checkout reference, `presentation`, `timeout`, and `title`
+ * identify the experience. Changing one replaces the underlying controller.
+ * `appearance` and `locale` update the existing controller without discarding
+ * payer progress.
  *
  * @category React
  */
-export interface CheckoutProps extends CheckoutOptions {
+export type CheckoutProps = CheckoutOptions & {
   /** CSS class applied to the outer container owned by your React application. */
   className?: string
   /** Inline styles applied to the outer container, never to controls inside Checkout. */
@@ -72,14 +72,14 @@ export interface CheckoutHandle {
  * Displays Inttegro-hosted Checkout in a React application.
  *
  * The component renders an empty `div`, loads the executable runtime from
- * Inttegro's fixed origin after mount, creates a controller for `orderId`, and
- * destroys it during cleanup. Server rendering is safe because no runtime is
- * loaded until the effect runs in a browser.
+ * Inttegro's fixed origin after mount, creates a controller for an `orderId` or
+ * `purchaseIntentId`, and destroys it during cleanup. Server rendering is safe
+ * because no runtime is loaded until the effect runs in a browser.
  *
- * Changing `features`, `orderId`, `presentation`, `timeout`, or `title` starts
- * a fresh hosted experience. Changing `appearance` or `locale` updates the
- * active experience in place. Keep the component mounted while a payment is
- * pending or confirmation is in progress.
+ * Changing `features`, the Checkout reference, `presentation`, `timeout`, or
+ * `title` starts a fresh hosted experience. Changing `appearance` or `locale`
+ * updates the active experience in place. Keep the component mounted while a
+ * payment is pending or confirmation is in progress.
  *
  * @example Present Checkout without building a dialog
  * ```tsx
@@ -113,6 +113,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
       onEvent,
       onReady,
       orderId,
+      purchaseIntentId,
       presentation = 'embedded',
       style,
       timeout,
@@ -178,6 +179,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
                   })
                 : undefined,
               orderId,
+              purchaseIntentId,
               timeout,
               title,
             }),
@@ -217,6 +219,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
       allowPaymentMethodChange,
       hasFeatureOverrides,
       orderId,
+      purchaseIntentId,
       presentation,
       showInvoiceDownload,
       showLineItems,

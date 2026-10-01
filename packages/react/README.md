@@ -16,3 +16,11 @@ export function Payment({ orderId }: { orderId: string }) {
   )
 }
 ```
+
+Pass `purchaseIntentId` instead of `orderId` when the Buy link uses a
+`customer_selected_amount` price. The same component renders the amount picker
+before continuing to Checkout:
+
+```tsx
+<Checkout purchaseIntentId={purchaseIntentId} presentation="modal" />
+```

@@ -149,6 +149,22 @@ await checkout.mount('#checkout')
 `loadInttegro()` returns `null` during server-side rendering. Initialize and
 mount Checkout only in browser code.
 
+For a Buy link backed by a `customer_selected_amount` price, use its public
+Purchase Intent instead of an Order:
+
+```ts
+const checkout = inttegro.createCheckout({
+  purchaseIntentId: 'YOUR_PURCHASE_INTENT_ID',
+})
+await checkout.mount('#checkout')
+```
+
+The same option works with `checkout.present()`. Checkout first renders the
+authoritative currency, range, and suggested amounts. After the payer continues,
+Inttegro creates the finalized Order idempotently and replaces the amount picker
+with the ordinary payment experience. Provide exactly one of `orderId` or
+`purchaseIntentId`; suggested amounts are shortcuts, not an allow-list.
+
 To open the same Checkout in a responsive modal, call `present()` instead of
 building a dialog and mounting into it:
 
@@ -184,14 +200,15 @@ not require a separate Inttegro package.
 
 All integrations accept these options:
 
-| Option       | Description                                                  |
-| ------------ | ------------------------------------------------------------ |
-| `appearance` | Sets the `light`, `dark`, or `system` theme.                 |
-| `features`   | Controls line items, document downloads, and method changes. |
-| `locale`     | Sets a BCP 47 locale preference, such as `en-GH`.            |
-| `orderId`    | Identifies the finalized Order to collect payment for.       |
-| `timeout`    | Sets how long Checkout waits to become ready.                |
-| `title`      | Provides an accessible title for the hosted experience.      |
+| Option             | Description                                                  |
+| ------------------ | ------------------------------------------------------------ |
+| `appearance`       | Sets the `light`, `dark`, or `system` theme.                 |
+| `features`         | Controls line items, document downloads, and method changes. |
+| `locale`           | Sets a BCP 47 locale preference, such as `en-GH`.            |
+| `orderId`          | Identifies the finalized Order to collect payment for.       |
+| `purchaseIntentId` | Identifies a Buy link whose amount the payer chooses.        |
+| `timeout`          | Sets how long Checkout waits to become ready.                |
+| `title`            | Provides an accessible title for the hosted experience.      |
 
 Hosted Checkout keeps its existing behavior when `features` is omitted: line
 items are hidden, invoice and receipt actions are offered after successful

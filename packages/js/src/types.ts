@@ -44,22 +44,13 @@ export interface CheckoutFeatures {
 /**
  * Immutable and initial configuration for one Checkout controller.
  *
- * Changing `features`, `orderId`, `timeout`, or `title` requires a new
- * controller. Use {@link CheckoutController.update} for locale and theme
+ * Changing `features`, the Checkout reference, `timeout`, or `title` requires
+ * a new controller. Use {@link CheckoutController.update} for locale and theme
  * changes after creation.
  *
  * @category Configuration
  */
-export interface CheckoutOptions {
-  /**
-   * Client-safe reference for the finalized Inttegro Order being paid.
-   *
-   * Create and finalize the Order on your server, then send only this reference
-   * to the browser. The payer may complete the Order but cannot use Checkout to
-   * change its commercial terms. Never place an Inttegro secret API key in this
-   * object or anywhere else in browser code.
-   */
-  orderId: string
+interface CheckoutOptionsBase {
   /** Initial color-scheme preferences for the hosted experience. */
   appearance?: CheckoutAppearance | undefined
   /** Optional hosted Checkout content and actions. */
@@ -83,6 +74,27 @@ export interface CheckoutOptions {
   timeout?: number | undefined
 }
 
+/** Configuration for either an existing Order or customer-selected amount flow. */
+export type CheckoutOptions = CheckoutOptionsBase &
+  (
+    | {
+        /**
+         * Client-safe reference for the finalized Inttegro Order being paid.
+         * Create and finalize it on your server; never expose an API key.
+         */
+        orderId: string
+        purchaseIntentId?: never
+      }
+    | {
+        orderId?: never
+        /**
+         * Client-safe Purchase Intent whose price uses the
+         * `customer_selected_amount` variant.
+         */
+        purchaseIntentId: string
+      }
+  )
+
 /**
  * The validated runtime currently served from Inttegro's controlled origin.
  *
@@ -100,16 +112,19 @@ export interface InttegroRuntime {
    */
   readonly protocolVersion: number
   /**
-   * Creates an unmounted controller for one finalized Order.
+   * Creates an unmounted controller for a finalized Order or a Purchase Intent
+   * whose price is selected by the customer inside Checkout.
    *
    * Creation validates configuration synchronously but performs no network or
    * DOM work. Register lifecycle handlers before calling
    * {@link CheckoutController.mount} so early events are not missed.
    *
-   * @param options - Order identity and initial presentation configuration.
+   * @param options - Exactly one Checkout reference and the initial
+   * presentation configuration.
    * @returns A controller in the `idle` state.
-   * @throws {@link InttegroCheckoutError} with `invalid_order_id`,
-   * `invalid_locale`, or `invalid_timeout` for invalid options.
+   * @throws {@link InttegroCheckoutError} with `invalid_checkout_reference`,
+   * `invalid_order_id`, `invalid_purchase_intent_id`, `invalid_locale`, or
+   * `invalid_timeout` for invalid options.
    */
   createCheckout(options: CheckoutOptions): CheckoutController
 }

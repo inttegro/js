@@ -12,8 +12,12 @@
  *   {@link CheckoutController.destroy} made it permanently unusable.
  * - `invalid_locale`: the supplied locale is not a well-formed BCP 47 tag.
  * - `invalid_features`: a Checkout feature flag is not a boolean.
+ * - `invalid_checkout_reference`: the configuration does not provide exactly
+ *   one supported Checkout reference.
  * - `invalid_order_id`: the Order reference is empty, too long, or contains
  *   unsupported characters.
+ * - `invalid_purchase_intent_id`: the Purchase Intent reference is empty, too
+ *   long, or contains unsupported characters.
  * - `invalid_runtime`: a global runtime did not come from the required hosted
  *   script or does not implement the supported protocol.
  * - `invalid_timeout`: the mount timeout falls outside 1,000–60,000 ms.
@@ -34,7 +38,9 @@ export type InttegroCheckoutErrorCode =
   | 'destroyed'
   | 'invalid_locale'
   | 'invalid_features'
+  | 'invalid_checkout_reference'
   | 'invalid_order_id'
+  | 'invalid_purchase_intent_id'
   | 'invalid_runtime'
   | 'invalid_timeout'
   | 'mount_failed'

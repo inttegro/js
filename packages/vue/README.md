@@ -13,3 +13,10 @@ import { Checkout } from '@inttegro/vue'
   <Checkout :order-id="orderId" @completed="onCompleted" />
 </template>
 ```
+
+For a `customer_selected_amount` Buy link, pass `purchase-intent-id` instead of
+`order-id`. This works in both embedded and modal presentations:
+
+```vue
+<Checkout :purchase-intent-id="purchaseIntentId" presentation="modal" />
+```

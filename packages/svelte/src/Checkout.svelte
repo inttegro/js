@@ -19,6 +19,7 @@
     onEvent,
     onReady,
     orderId,
+    purchaseIntentId,
     presentation = 'embedded',
     timeout,
     title,
@@ -43,7 +44,7 @@
   }
 
   $effect(() => {
-    const identity = { features, orderId, presentation, timeout, title }
+    const identity = { features, orderId, purchaseIntentId, presentation, timeout, title }
     if (!container) return
 
     let active = true
@@ -60,6 +61,7 @@
             features: identity.features,
             locale: untrack(() => locale),
             orderId: identity.orderId,
+            purchaseIntentId: identity.purchaseIntentId,
             timeout: identity.timeout,
             title: identity.title,
           }),

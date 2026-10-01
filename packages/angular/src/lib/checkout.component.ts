@@ -75,7 +75,9 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
   /** Initial and reactive BCP 47 locale preference. */
   @Input() locale?: string
   /** Client-safe reference for the finalized Order being paid. */
-  @Input({ required: true }) orderId = ''
+  @Input() orderId?: string
+  /** Client-safe amount-selection Purchase Intent. Mutually exclusive with orderId. */
+  @Input() purchaseIntentId?: string
   /** Displays Checkout inline by default or in an Inttegro-managed modal. */
   @Input() presentation: CheckoutPresentation = 'embedded'
   /** Mount timeout from 1,000–60,000 ms; defaults to 15,000 ms. */
@@ -119,6 +121,7 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
     if (
       changes['features'] ||
       changes['orderId'] ||
+      changes['purchaseIntentId'] ||
       changes['presentation'] ||
       changes['timeout'] ||
       changes['title']
@@ -175,6 +178,7 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
           features: this.features,
           locale: this.locale,
           orderId: this.orderId,
+          purchaseIntentId: this.purchaseIntentId,
           timeout: this.timeout,
           title: this.title,
         }),

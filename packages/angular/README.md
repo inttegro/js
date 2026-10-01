@@ -14,3 +14,10 @@ import { CheckoutComponent } from '@inttegro/angular'
 })
 export class PaymentPage {}
 ```
+
+For a `customer_selected_amount` Buy link, bind `purchaseIntentId` instead of
+`orderId`. This works in both embedded and modal presentations:
+
+```html
+<inttegro-checkout [purchaseIntentId]="purchaseIntentId" presentation="modal" />
+```
