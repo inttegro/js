@@ -48,11 +48,7 @@ Use `@inttegro/react` inside the Inertia page and perform the completion visit o
 
 ```tsx
 import { router } from '@inertiajs/react'
-import {
-  Checkout,
-  type CheckoutErrorEvent,
-  type CheckoutEvent,
-} from '@inttegro/react'
+import { Checkout, type CheckoutEvent } from '@inttegro/react'
 
 interface PayProps {
   orderId: string
@@ -73,14 +69,11 @@ export default function Pay({ orderId, pageSessionId }: PayProps) {
     sendTelemetry({ type: event.type, occurredAt: event.occurredAt })
   }
 
-  function handleError(failure: CheckoutErrorEvent | Error) {
-    if (failure instanceof Error) {
-      sendTelemetry({
-        type: 'initializationFailed',
-        message: failure.message,
-      })
-    }
-    // Hosted errors already pass through recordEvent.
+  function handleError(error: Error) {
+    sendTelemetry({
+      type: 'initializationFailed',
+      message: error.message,
+    })
   }
 
   return (
@@ -106,11 +99,7 @@ Vue pages receive the same server props and use native emitted events:
 ```vue
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3'
-import {
-  Checkout,
-  type CheckoutErrorEvent,
-  type CheckoutEvent,
-} from '@inttegro/vue'
+import { Checkout, type CheckoutEvent } from '@inttegro/vue'
 
 const props = defineProps<{ orderId: string; pageSessionId: string }>()
 
@@ -130,23 +119,20 @@ function recordEvent(event: CheckoutEvent) {
   )
 }
 
-function handleError(failure: CheckoutErrorEvent | Error) {
-  if (failure instanceof Error) {
-    navigator.sendBeacon(
-      '/telemetry/checkout',
-      new Blob(
-        [
-          JSON.stringify({
-            type: 'initializationFailed',
-            message: failure.message,
-            pageSessionId: props.pageSessionId,
-          }),
-        ],
-        { type: 'application/json' },
-      ),
-    )
-  }
-  // Hosted errors already pass through recordEvent.
+function handleError(error: Error) {
+  navigator.sendBeacon(
+    '/telemetry/checkout',
+    new Blob(
+      [
+        JSON.stringify({
+          type: 'initializationFailed',
+          message: error.message,
+          pageSessionId: props.pageSessionId,
+        }),
+      ],
+      { type: 'application/json' },
+    ),
+  )
 }
 </script>
 
@@ -172,11 +158,7 @@ Svelte pages use callback props and the Inertia Svelte router:
 ```svelte
 <script lang="ts">
   import { router } from '@inertiajs/svelte'
-  import {
-    Checkout,
-    type CheckoutErrorEvent,
-    type CheckoutEvent,
-  } from '@inttegro/svelte'
+  import { Checkout, type CheckoutEvent } from '@inttegro/svelte'
 
   let { orderId, pageSessionId }: { orderId: string; pageSessionId: string } =
     $props()
@@ -197,23 +179,20 @@ Svelte pages use callback props and the Inertia Svelte router:
     )
   }
 
-  function handleError(failure: CheckoutErrorEvent | Error) {
-    if (failure instanceof Error) {
-      navigator.sendBeacon(
-        '/telemetry/checkout',
-        new Blob(
-          [
-            JSON.stringify({
-              type: 'initializationFailed',
-              message: failure.message,
-              pageSessionId,
-            }),
-          ],
-          { type: 'application/json' },
-        ),
-      )
-    }
-    // Hosted errors already pass through recordEvent.
+  function handleError(error: Error) {
+    navigator.sendBeacon(
+      '/telemetry/checkout',
+      new Blob(
+        [
+          JSON.stringify({
+            type: 'initializationFailed',
+            message: error.message,
+            pageSessionId,
+          }),
+        ],
+        { type: 'application/json' },
+      ),
+    )
   }
 </script>
 
@@ -236,7 +215,7 @@ An Inertia visit that removes the payment page also removes the adapter componen
 
 On a visit that keeps the page component but supplies a different `orderId`, the framework adapter intentionally destroys the old controller and creates a new hosted experience. Changes limited to `appearance` or `locale` update the active experience in place.
 
-Do not initiate automatic visits while Checkout reports `paymentAttempt` or `confirmationRequired`. Keep the component visible so the payer can see provider progress and finish any required step. If the payer deliberately navigates away, treat the browser experience as interrupted—not necessarily failed. The server-side attempt may still complete.
+Do not initiate automatic visits while Checkout reports `paymentAttemptStarted`, `paymentActionRequired`, or `paymentProcessing`. Keep the component visible so the payer can see provider progress and finish any required step. If the payer deliberately navigates away, treat the browser experience as interrupted—not necessarily failed. The server-side attempt may still complete.
 
 The `/orders/complete` route in the examples must retrieve authoritative Order state using server credentials. If payment is still pending, render a pending state and continue reconciliation. Never fulfill solely because `router.visit()` followed a `completed` callback.
 
@@ -244,7 +223,7 @@ The `/orders/complete` route in the examples must retrieve authoritative Order s
 
 Inertia SSR does not require special Inttegro code. The selected framework adapter renders an empty host container on the server and loads the hosted runtime only in the browser lifecycle. The Inertia page prop is therefore sufficient for both initial hydration and later client-side visits.
 
-Forward the adapter's generic event hook to telemetry so events such as `confirmationRequired`, `paymentAttemptFailed`, and `canceled` are not lost during the handoff between hosted Checkout and the Inertia page. Treat a JavaScript `Error` as an initialization failure and a `CheckoutErrorEvent` as a sanitized hosted error. Checkout owns payment-specific recovery messages.
+Forward the adapter's generic event hook to telemetry so events such as `paymentActionRequired`, `paymentAttemptFailed`, and `canceled` are not lost during the handoff between hosted Checkout and the Inertia page. Treat a JavaScript `Error` as an initialization failure and a `failed` event as a sanitized terminal Checkout failure. Checkout owns payment-specific recovery messages.
 
 Use `@inttegro/js` directly only when you need controller ownership outside the React, Vue, or Svelte page tree, or when a strict Content Security Policy requires passing a per-response nonce to `loadInttegro()`. Inertia itself does not change that boundary.
 

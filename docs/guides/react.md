@@ -23,15 +23,13 @@ Your server should pass a client-safe Order ID to the React route. Never expose 
 
 ## Render a payment route
 
-The following component records sanitized lifecycle events, distinguishes initialization failures from hosted errors, and navigates only after Checkout reports completion:
+The following component records sanitized lifecycle events, handles
+initialization failure separately from terminal Checkout failure, and navigates
+only after Checkout reports completion:
 
 ```tsx
 import { useCallback, useState } from 'react'
-import {
-  Checkout,
-  type CheckoutErrorEvent,
-  type CheckoutEvent,
-} from '@inttegro/react'
+import { Checkout, type CheckoutEvent } from '@inttegro/react'
 
 interface PaymentPageProps {
   orderId: string
@@ -61,24 +59,21 @@ export function PaymentPage({ orderId, pageSessionId }: PaymentPageProps) {
   )
 
   const handleError = useCallback(
-    (failure: CheckoutErrorEvent | Error) => {
-      if (failure instanceof Error) {
-        setInitializationFailed(true)
-        navigator.sendBeacon(
-          '/telemetry/checkout',
-          new Blob(
-            [
-              JSON.stringify({
-                type: 'initializationFailed',
-                message: failure.message,
-                pageSessionId,
-              }),
-            ],
-            { type: 'application/json' },
-          ),
-        )
-      }
-      // Hosted errors already pass through recordEvent. Checkout owns their copy.
+    (error: Error) => {
+      setInitializationFailed(true)
+      navigator.sendBeacon(
+        '/telemetry/checkout',
+        new Blob(
+          [
+            JSON.stringify({
+              type: 'initializationFailed',
+              message: error.message,
+              pageSessionId,
+            }),
+          ],
+          { type: 'application/json' },
+        ),
+      )
     },
     [pageSessionId],
   )
@@ -102,6 +97,7 @@ export function PaymentPage({ orderId, pageSessionId }: PaymentPageProps) {
         style={{ inlineSize: '100%', minBlockSize: '32rem' }}
         onEvent={recordEvent}
         onCompleted={() => window.location.assign('/orders/complete')}
+        onFailed={(event) => reportCheckoutFailure(event.failure)}
         onError={handleError}
       />
     </main>
@@ -144,14 +140,13 @@ The forwarded {@linkcode @inttegro/react!CheckoutHandle:interface | CheckoutHand
 
 ## Events and errors
 
-`onEvent` receives every sanitized {@linkcode @inttegro/react!CheckoutEvent:type | CheckoutEvent}. Use it for complete telemetry and for states without dedicated callback props, including `paymentAttempt`, `confirmationRequired`, and `paymentAttemptFailed`. `onReady`, `onCompleted`, and `onCanceled` are convenient filtered callbacks for their corresponding events.
+`onEvent` receives every sanitized {@linkcode @inttegro/react!CheckoutEvent:type | CheckoutEvent}. Use it for complete lifecycle handling and for states without dedicated callback props, including `orderPrepared`, `paymentActionRequired`, `paymentProcessing`, and `paymentAttemptFailed`. `onReady`, `onCompleted`, `onCanceled`, and `onFailed` are convenient filtered callbacks for their corresponding events.
 
-`onError` receives one of two shapes:
-
-- an `Error` when the loader, configuration, or mount operation fails; or
-- a {@linkcode @inttegro/react!CheckoutErrorEvent:interface | CheckoutErrorEvent} when the hosted experience reports a sanitized operational error.
-
-Show a host-page fallback for an initialization error because no usable Checkout is present. For a hosted error, record only the sanitized fields and let Checkout present the relevant correction or retry instructions. Do not log iframe messages, DOM content, account details, or provider responses.
+`onFailed` receives Checkout's sanitized terminal failure event. `onError`
+receives an `Error` only when the loader, configuration, or mount operation
+fails. Show a host-page fallback for that initialization error because no
+usable Checkout is present. Do not log iframe messages, DOM content, account
+details, or provider responses.
 
 ## Server rendering and hydration
 

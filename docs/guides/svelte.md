@@ -23,16 +23,14 @@ Create and finalize the Order on your server. Send only the client-safe Order ID
 
 ## Render a SvelteKit payment page
 
-This page component records the sanitized event stream, handles initialization failure separately from hosted errors, and navigates after the hosted success state:
+This page component records the sanitized event stream, handles initialization
+failure separately from terminal Checkout failure, and navigates after the
+hosted success state:
 
 ```svelte
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import {
-    Checkout,
-    type CheckoutErrorEvent,
-    type CheckoutEvent,
-  } from '@inttegro/svelte'
+  import { Checkout, type CheckoutEvent } from '@inttegro/svelte'
 
   let { orderId, pageSessionId }: { orderId: string; pageSessionId: string } =
     $props()
@@ -55,24 +53,21 @@ This page component records the sanitized event stream, handles initialization f
     )
   }
 
-  function handleError(failure: CheckoutErrorEvent | Error) {
-    if (failure instanceof Error) {
-      initializationFailed = true
-      navigator.sendBeacon(
-        '/telemetry/checkout',
-        new Blob(
-          [
-            JSON.stringify({
-              type: 'initializationFailed',
-              message: failure.message,
-              pageSessionId,
-            }),
-          ],
-          { type: 'application/json' },
-        ),
-      )
-    }
-    // Hosted errors already pass through recordEvent. Checkout owns their copy.
+  function handleError(error: Error) {
+    initializationFailed = true
+    navigator.sendBeacon(
+      '/telemetry/checkout',
+      new Blob(
+        [
+          JSON.stringify({
+            type: 'initializationFailed',
+            message: error.message,
+            pageSessionId,
+          }),
+        ],
+        { type: 'application/json' },
+      ),
+    )
   }
 </script>
 
@@ -93,6 +88,7 @@ This page component records the sanitized event stream, handles initialization f
       title="Payment for your order"
       onEvent={recordEvent}
       onCompleted={() => void goto('/orders/complete')}
+      onFailed={(event) => reportCheckoutFailure(event.failure)}
       onError={handleError}
     />
   {/if}
@@ -138,11 +134,14 @@ Svelte 5 callback props are used instead of dispatched component events:
 - `onReady` receives the interactive `ready` event;
 - `onCompleted` receives the successful hosted terminal event;
 - `onCanceled` receives a managed-modal dismissal before completion; and
-- `onError` receives loader and mount errors as well as hosted error events.
+- `onFailed` receives Checkout's sanitized terminal failure event; and
+- `onError` receives loader and mount errors.
 
-Use `onEvent` for telemetry and for `paymentAttempt`, `confirmationRequired`, and `paymentAttemptFailed`. Keep telemetry sparse: event type, occurrence time, and an application-owned opaque page correlation value are usually enough.
+Use `onEvent` for lifecycle handling including `orderPrepared`, `paymentActionRequired`, `paymentProcessing`, and `paymentAttemptFailed`. Keep telemetry sparse: event type, occurrence time, and an application-owned opaque page correlation value are usually enough.
 
-The `onError` argument is either an `Error` from initialization or a {@linkcode @inttegro/svelte!CheckoutErrorEvent:interface | CheckoutErrorEvent} from inside hosted Checkout. Show an application fallback only for the first case. Hosted Checkout already knows whether an operational error is recoverable and owns the payment-specific message.
+The `onError` argument is an `Error` from initialization. Show an application
+fallback because no usable Checkout is present. Checkout owns payment-specific
+messages for both recoverable attempt failures and terminal `onFailed` events.
 
 ## Server rendering and hydration
 

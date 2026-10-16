@@ -30,7 +30,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core'
 import {
   CheckoutComponent,
   type CheckoutAppearance,
-  type CheckoutErrorEvent,
   type CheckoutEvent,
 } from '@inttegro/angular'
 
@@ -56,6 +55,7 @@ import {
           style="display: block; inline-size: 100%; min-block-size: 32rem"
           (event)="recordEvent($event)"
           (completed)="handleCompleted()"
+          (failed)="handleFailed($event)"
           (error)="handleError($event)"
         />
       }
@@ -89,24 +89,25 @@ export class PaymentPageComponent {
     window.location.assign('/orders/complete')
   }
 
-  handleError(failure: CheckoutErrorEvent | Error): void {
-    if (failure instanceof Error) {
-      this.initializationFailed = true
-      navigator.sendBeacon(
-        '/telemetry/checkout',
-        new Blob(
-          [
-            JSON.stringify({
-              type: 'initializationFailed',
-              message: failure.message,
-              pageSessionId: this.pageSessionId,
-            }),
-          ],
-          { type: 'application/json' },
-        ),
-      )
-    }
-    // Hosted errors already pass through recordEvent. Checkout owns their copy.
+  handleFailed(event: Extract<CheckoutEvent, { type: 'failed' }>): void {
+    reportCheckoutFailure(event.failure)
+  }
+
+  handleError(error: Error): void {
+    this.initializationFailed = true
+    navigator.sendBeacon(
+      '/telemetry/checkout',
+      new Blob(
+        [
+          JSON.stringify({
+            type: 'initializationFailed',
+            message: error.message,
+            pageSessionId: this.pageSessionId,
+          }),
+        ],
+        { type: 'application/json' },
+      ),
+    )
   }
 }
 ```
@@ -151,11 +152,15 @@ The adapter follows Angular output conventions:
 - `(ready)` emits when the frame becomes interactive;
 - `(completed)` emits at the successful hosted terminal state;
 - `(canceled)` emits when a payer dismisses managed modal Checkout; and
-- `(error)` emits initialization failures and sanitized hosted errors.
+- `(failed)` emits Checkout's sanitized terminal failure event; and
+- `(error)` emits loader, configuration, and mount failures.
 
-Use `(event)` for comprehensive telemetry, including `paymentAttempt`, `confirmationRequired`, and `paymentAttemptFailed`. The generic output fires before the matching specialized output for the same event.
+Use `(event)` for comprehensive lifecycle handling, including `orderPrepared`, `paymentActionRequired`, `paymentProcessing`, and `paymentAttemptFailed`. The generic output fires before the matching specialized output for the same event.
 
-An `Error` from `(error)` means the loader, configuration, or mount failed and a host-page fallback is appropriate. A {@linkcode @inttegro/angular!CheckoutErrorEvent:interface | CheckoutErrorEvent} came from hosted Checkout; record its sanitized code and recovery status without duplicating its payer-facing message.
+An `Error` from `(error)` means the loader, configuration, or mount failed and
+a host-page fallback is appropriate. A `failed` lifecycle event means Checkout
+cannot continue this presentation; use its sanitized failure object for coarse
+application logic without duplicating Checkout's payer-facing message.
 
 ## Server rendering and hydration
 

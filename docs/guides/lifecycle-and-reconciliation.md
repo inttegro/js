@@ -32,18 +32,24 @@ Calling {@linkcode @inttegro/js!CheckoutController#unmount | CheckoutController.
 
 Subscribe to a specific event with {@linkcode @inttegro/js!CheckoutController#on | CheckoutController.on}, or use {@linkcode @inttegro/js!CheckoutController#onEvent | CheckoutController.onEvent} for telemetry and exhaustive handling.
 
-| Event                  | What it means                                                      | What it does not mean                                         |
-| ---------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `ready`                | The hosted UI is initialized and interactive.                      | The Order is paid or necessarily payable.                     |
-| `change`               | Visible payer input changed; `complete` reports form completeness. | The input has passed final server or provider validation.     |
-| `paymentAttempt`       | Valid input was submitted and an attempt began.                    | Funds were authorized or captured.                            |
-| `confirmationRequired` | The payer must approve, enter a code, or follow a redirect.        | The host should collect the code or take over provider UI.    |
-| `paymentAttemptFailed` | An individual attempt ended without completing the Order.          | The Order can never be paid or the payer canceled.            |
-| `completed`            | Hosted Checkout reached its successful terminal experience.        | The browser event alone authorizes fulfillment.               |
-| `canceled`             | The payer deliberately left or canceled the hosted flow.           | No server-side attempt remains pending.                       |
-| `error`                | Hosted Checkout encountered an operational error.                  | Every error requires replacing the UI; inspect `recoverable`. |
+| Event                   | What it means                                                      | What it does not mean                                   |
+| ----------------------- | ------------------------------------------------------------------ | ------------------------------------------------------- |
+| `presented`             | A new Checkout presentation began.                                 | The hosted UI is interactive yet.                       |
+| `ready`                 | The hosted UI is initialized and interactive.                      | The Order is paid or necessarily payable.               |
+| `change`                | Visible payer input changed; `complete` reports form completeness. | The input passed final server or provider validation.   |
+| `orderPrepared`         | Checkout has the Order it will collect payment for.                | A payment attempt has begun.                            |
+| `paymentAttemptStarted` | Valid input was submitted and an attempt began.                    | Funds were authorized or captured.                      |
+| `paymentActionRequired` | Checkout is guiding the payer through another required action.     | The host should collect codes or take over provider UI. |
+| `paymentProcessing`     | The provider accepted the attempt and its outcome remains pending. | The Order is paid.                                      |
+| `paymentAttemptFailed`  | One attempt ended without completing the Order.                    | The Order can never be paid or the payer canceled.      |
+| `completed`             | Checkout reached its successful terminal experience.               | The browser event alone authorizes fulfillment.         |
+| `canceled`              | The payer deliberately left or canceled the hosted flow.           | No server-side attempt remains pending.                 |
+| `failed`                | Checkout cannot continue this presentation.                        | Every payment attempt failed permanently.               |
 
-Events intentionally omit account numbers, contact details, confirmation values, raw provider responses, customer identifiers, and the Order reference. Add your own non-sensitive correlation context when forwarding them to telemetry.
+Events intentionally omit account numbers, contact details, confirmation
+values, raw provider responses, customer identifiers, and Payment IDs. Events
+after Order creation include a client-safe Order snapshot. Add your own
+non-sensitive correlation context when forwarding them to telemetry.
 
 ## Observe one event
 
@@ -52,10 +58,11 @@ Specific subscriptions narrow the event payload automatically:
 ```ts
 const stopWatchingFailures = checkout.on(
   'paymentAttemptFailed',
-  ({ code, recoverable, occurredAt }) => {
+  ({ failure, order, occurredAt }) => {
     analytics.track('checkout_attempt_failed', {
-      checkoutCode: code,
-      recoverable,
+      checkoutCode: failure.code,
+      recoverable: failure.recoverable,
+      orderId: order.id,
       occurredAt,
       pageSessionId,
     })
@@ -77,29 +84,38 @@ import type { CheckoutEvent } from '@inttegro/js'
 
 function handleCheckoutEvent(event: CheckoutEvent): void {
   switch (event.type) {
+    case 'presented':
+      checkoutRegion.setAttribute('aria-busy', 'true')
+      break
     case 'ready':
       checkoutRegion.removeAttribute('aria-busy')
       break
     case 'change':
       setLeaveWarning(event.complete)
       break
-    case 'paymentAttempt':
+    case 'orderPrepared':
+      rememberOrder(event.order.id)
+      break
+    case 'paymentAttemptStarted':
       setSurroundingNavigationDisabled(true)
       break
-    case 'confirmationRequired':
-      keepPaymentDialogOpen(event.kind)
+    case 'paymentActionRequired':
+      keepPaymentDialogOpen(event.action.type)
+      break
+    case 'paymentProcessing':
+      showProcessingState(event.order)
       break
     case 'paymentAttemptFailed':
-      recordAttemptFailure(event.code, event.recoverable)
+      recordAttemptFailure(event.failure.code, event.failure.recoverable)
       break
     case 'completed':
-      beginServerReconciliation()
+      beginServerReconciliation(event.order.id)
       break
     case 'canceled':
-      preserveOrderForLater()
+      if (event.order) preserveOrderForLater(event.order.id)
       break
-    case 'error':
-      reportCheckoutError(event.error)
+    case 'failed':
+      reportCheckoutFailure(event.failure)
       break
     default: {
       const neverEvent: never = event
@@ -118,8 +134,8 @@ Event handler exceptions do not stop Checkout or other subscribers. They are ret
 Treat browser completion as a prompt to refresh authoritative state:
 
 ```ts
-checkout.on('completed', async () => {
-  const response = await fetch(`/api/orders/${localOrderReference}/status`, {
+checkout.on('completed', async ({ order: checkoutOrder }) => {
+  const response = await fetch(`/api/orders/${checkoutOrder.id}/status`, {
     credentials: 'same-origin',
   })
 

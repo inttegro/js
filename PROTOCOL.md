@@ -8,7 +8,7 @@ publishes its TypeScript contract. Every message contains:
 ```ts
 {
   channel: 'inttegro.checkout'
-  version: 1
+  version: 2
   instanceId: string
   type: string
   payload?: unknown
@@ -36,14 +36,19 @@ supported, and its `instanceId` matches the current checkout.
 
 ## Public lifecycle events
 
+- `presented`
 - `ready`
 - `change`
-- `paymentAttempt`
-- `confirmationRequired`
+- `orderPrepared`
+- `paymentAttemptStarted`
+- `paymentActionRequired`
+- `paymentProcessing`
 - `paymentAttemptFailed`
 - `completed`
 - `canceled`
-- `error`
+- `failed`
 
 Events never include account numbers, confirmation tokens, billing details,
-customer identifiers, the Order reference, or raw provider responses.
+customer identifiers, Payment IDs, or raw provider responses. Once Checkout has
+an Order, lifecycle events carry the same client-safe Order snapshot used by the
+web and mobile SDKs.

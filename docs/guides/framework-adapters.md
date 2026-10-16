@@ -41,7 +41,7 @@ Every adapter applies the same controller rules through different framework prim
 
 That last behavior matters in real applications. Route transitions, conditional rendering, development lifecycle probes, and rapidly changing props can all remove a component while the hosted runtime is still loading. The adapters guard those asynchronous boundaries so a stale Checkout cannot mount into a view that no longer owns it.
 
-Each adapter forwards the complete sanitized {@linkcode @inttegro/js!CheckoutEvent:type | Checkout event stream}, along with convenient `ready`, `completed`, `canceled`, and `error` hooks. Set `presentation` to `modal` and the shared runtime supplies the dialog, backdrop, responsive sizing, close controls, scrolling, and focus behavior. The generic event hook remains the right place for telemetry and events such as `paymentAttempt`, `confirmationRequired`, and `paymentAttemptFailed`. Browser completion is useful for navigation, but your server must still verify the Order before fulfillment.
+Each adapter forwards the complete sanitized {@linkcode @inttegro/js!CheckoutEvent:type | Checkout event stream}, along with convenient `ready`, `completed`, `canceled`, `failed`, and initialization `error` hooks. Set `presentation` to `modal` and the shared runtime supplies the dialog, backdrop, responsive sizing, close controls, scrolling, and focus behavior. The generic event hook remains the right place for lifecycle states such as `orderPrepared`, `paymentActionRequired`, `paymentProcessing`, and `paymentAttemptFailed`. Browser completion is useful for navigation, but your server must still verify the Order before fulfillment.
 
 ## Why use an official adapter
 

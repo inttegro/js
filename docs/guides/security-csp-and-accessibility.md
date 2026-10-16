@@ -108,7 +108,12 @@ The shell uses native dialog behavior where available and retains an accessible 
 
 ## Treat errors according to their boundary
 
-{@linkcode @inttegro/js!InttegroCheckoutError:class | InttegroCheckoutError} describes loader, configuration, and controller lifecycle failures. {@linkcode @inttegro/js!CheckoutErrorEvent:interface | CheckoutErrorEvent} describes sanitized operational errors reported by hosted Checkout. These are different shapes and can reach the same framework `onError` or `error` hook.
+{@linkcode @inttegro/js!InttegroCheckoutError:class | InttegroCheckoutError}
+describes loader, configuration, and controller failures delivered to a
+framework's `onError` or `error` hook. A sanitized
+{@linkcode @inttegro/js!CheckoutFailedEvent:interface | CheckoutFailedEvent}
+is part of the ordinary Checkout lifecycle and reaches the `failed` hook and
+the generic event stream instead.
 
 Use stable error codes for telemetry and coarse recovery decisions. Show calm, payer-oriented copy rather than raw error messages. Hosted Checkout owns detailed payment-method correction and retry instructions.
 

@@ -29,11 +29,7 @@ This Vue component forwards the complete event stream to application telemetry, 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  Checkout,
-  type CheckoutErrorEvent,
-  type CheckoutEvent,
-} from '@inttegro/vue'
+import { Checkout, type CheckoutEvent } from '@inttegro/vue'
 
 const props = defineProps<{
   orderId: string
@@ -42,6 +38,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const initializationFailed = ref(false)
+const paymentFailed = ref(false)
 
 function recordEvent(event: CheckoutEvent) {
   navigator.sendBeacon(
@@ -59,24 +56,25 @@ function recordEvent(event: CheckoutEvent) {
   )
 }
 
-function handleError(failure: CheckoutErrorEvent | Error) {
-  if (failure instanceof Error) {
-    initializationFailed.value = true
-    navigator.sendBeacon(
-      '/telemetry/checkout',
-      new Blob(
-        [
-          JSON.stringify({
-            type: 'initializationFailed',
-            message: failure.message,
-            pageSessionId: props.pageSessionId,
-          }),
-        ],
-        { type: 'application/json' },
-      ),
-    )
-  }
-  // Hosted errors already pass through recordEvent. Checkout owns their copy.
+function handleError(error: Error) {
+  initializationFailed.value = true
+  navigator.sendBeacon(
+    '/telemetry/checkout',
+    new Blob(
+      [
+        JSON.stringify({
+          type: 'initializationFailed',
+          message: error.message,
+          pageSessionId: props.pageSessionId,
+        }),
+      ],
+      { type: 'application/json' },
+    ),
+  )
+}
+
+function handleFailed() {
+  paymentFailed.value = true
 }
 
 function handleCompleted() {
@@ -90,8 +88,12 @@ function handleCompleted() {
     <p v-if="initializationFailed" role="alert">
       Checkout could not load. Refresh the page to try again.
     </p>
+    <p v-else-if="paymentFailed" role="alert">
+      Payment could not be completed. Try again or choose another payment
+      method.
+    </p>
     <Checkout
-      v-else
+      v-show="!initializationFailed && !paymentFailed"
       :order-id="props.orderId"
       :appearance="{ theme: 'system' }"
       locale="en-GH"
@@ -99,6 +101,7 @@ function handleCompleted() {
       style="inline-size: 100%; min-block-size: 32rem"
       @event="recordEvent"
       @completed="handleCompleted"
+      @failed="handleFailed"
       @error="handleError"
     />
   </main>
@@ -119,7 +122,7 @@ The adapter uses Vue primitives intentionally:
 
 This makes the component predictable inside `v-if`, `<RouterView>`, and transitions: the Vue view that renders Checkout owns exactly one current controller. With `presentation="modal"`, the shared runtime owns the dialog itself. Keep the component mounted while payment submission or provider confirmation is pending. Removing it destroys the frame even if the server-side attempt continues.
 
-The component uses Vue emits rather than DOM custom events. It emits `event`, `ready`, `completed`, `canceled`, and `error`. Set `presentation="modal"` to delegate the dialog, backdrop, viewport scrolling, close control, and focus behavior to Inttegro:
+The component uses Vue emits rather than DOM custom events. It emits `event`, `ready`, `completed`, `canceled`, `failed`, and `error`. Set `presentation="modal"` to delegate the dialog, backdrop, viewport scrolling, close control, and focus behavior to Inttegro:
 
 ```vue
 <script setup lang="ts">
@@ -144,9 +147,12 @@ The {@linkcode @inttegro/vue!CheckoutExposed:interface | CheckoutExposed} templa
 
 ## Events and errors
 
-The `event` emission receives every sanitized {@linkcode @inttegro/vue!CheckoutEvent:type | CheckoutEvent}. It is the reliable integration point for telemetry and for lifecycle states without a dedicated emission, such as `confirmationRequired` and `paymentAttemptFailed`. Use the dedicated `canceled` emission to update the state that conditionally renders modal Checkout.
+The `event` emission receives every sanitized {@linkcode @inttegro/vue!CheckoutEvent:type | CheckoutEvent}. It is the reliable integration point for lifecycle states without a dedicated emission, such as `paymentActionRequired`, `paymentProcessing`, and `paymentAttemptFailed`. Use the dedicated `canceled` emission to update the state that conditionally renders modal Checkout.
 
-The `error` emission receives either a JavaScript `Error` from runtime loading or mounting, or a {@linkcode @inttegro/vue!CheckoutErrorEvent:interface | CheckoutErrorEvent} from hosted Checkout. Test `failure instanceof Error` before choosing the surrounding-page response. Do not replace Checkout merely because a hosted error is recoverable; the frame owns its retry and correction UI.
+The `failed` emission receives Checkout's sanitized terminal failure event. The
+`error` emission receives a JavaScript `Error` only when runtime loading or
+mounting fails. Do not replace Checkout for a recoverable
+`paymentAttemptFailed` event; the frame owns its retry and correction UI.
 
 ## Server rendering and hydration
 
