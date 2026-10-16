@@ -15,7 +15,6 @@ import {
   loadInttegro,
   type CheckoutAppearance,
   type CheckoutController,
-  type CheckoutErrorEvent,
   type CheckoutEvent,
   type CheckoutFeatures,
   type CheckoutOptions,
@@ -47,6 +46,7 @@ import {
  *       presentation="modal"
  *       [appearance]="{ theme: 'system' }"
  *       (completed)="onCompleted()"
+ *       (failed)="onFailed($event)"
  *       (error)="onError($event)"
  *     />
  *   `,
@@ -54,7 +54,10 @@ import {
  * export class PaymentPage {
  *   orderId = input.required<string>()
  *   onCompleted(): void { location.assign('/orders/complete') }
- *   onError(error: CheckoutErrorEvent | Error): void {
+ *   onFailed(event: CheckoutFailedEvent): void {
+ *     showCheckoutFailure(event.failure)
+ *   }
+ *   onError(error: Error): void {
  *     reportCheckoutError(error)
  *   }
  * }
@@ -94,8 +97,12 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Output() readonly canceled = new EventEmitter<
     Extract<CheckoutEvent, { type: 'canceled' }>
   >()
-  /** Emitted for loader/mount failures and sanitized hosted errors. */
-  @Output() readonly error = new EventEmitter<CheckoutErrorEvent | Error>()
+  /** Emitted when Checkout reaches a terminal failure state. */
+  @Output() readonly failed = new EventEmitter<
+    Extract<CheckoutEvent, { type: 'failed' }>
+  >()
+  /** Emitted for loader or mount failures. */
+  @Output() readonly error = new EventEmitter<Error>()
   /** Emitted for every sanitized hosted Checkout lifecycle event. */
   @Output() readonly event = new EventEmitter<CheckoutEvent>()
   /** Emitted once the iframe is interactive. */
@@ -169,6 +176,7 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
     const generation = this.generation
     const target = this.container.nativeElement
     let canceled = false
+    let failed = false
 
     try {
       const inttegro = await loadInttegro()
@@ -197,12 +205,15 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
         }
         if (event.type === 'ready') this.ready.emit(event)
         if (event.type === 'completed') this.completed.emit(event)
-        if (event.type === 'error') this.error.emit(event)
+        if (event.type === 'failed') {
+          failed = true
+          this.failed.emit(event)
+        }
       })
       if (this.presentation === 'modal') await checkout.present()
       else await checkout.mount(target)
     } catch (error) {
-      if (generation !== this.generation || canceled) return
+      if (generation !== this.generation || canceled || failed) return
       this.error.emit(
         error instanceof Error ? error : new Error('Checkout failed to load.'),
       )

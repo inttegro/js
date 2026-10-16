@@ -1,7 +1,6 @@
 import {
   loadInttegro,
   type CheckoutController,
-  type CheckoutErrorEvent,
   type CheckoutEvent,
   type CheckoutOptions,
   type CheckoutPresentation,
@@ -39,12 +38,10 @@ export type CheckoutProps = CheckoutOptions & {
    * signal for fulfillment.
    */
   onCompleted?: (event: Extract<CheckoutEvent, { type: 'completed' }>) => void
-  /**
-   * Called for loader/mount errors and sanitized hosted errors.
-   * Use `error instanceof InttegroCheckoutError` or check for an event `type`
-   * before reading framework-independent details.
-   */
-  onError?: (event: CheckoutErrorEvent | Error) => void
+  /** Called when Checkout reaches a terminal failure state. */
+  onFailed?: (event: Extract<CheckoutEvent, { type: 'failed' }>) => void
+  /** Called for loader or mount errors. */
+  onError?: (error: Error) => void
   /** Called for every sanitized lifecycle event, including events above. */
   onEvent?: (event: CheckoutEvent) => void
   /** Called once the iframe is interactive and its mount promise has resolved. */
@@ -109,6 +106,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
       locale,
       onCanceled,
       onCompleted,
+      onFailed,
       onError,
       onEvent,
       onReady,
@@ -126,6 +124,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
     const callbacksRef = useRef({
       onCanceled,
       onCompleted,
+      onFailed,
       onError,
       onEvent,
       onReady,
@@ -139,6 +138,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
     callbacksRef.current = {
       onCanceled,
       onCompleted,
+      onFailed,
       onError,
       onEvent,
       onReady,
@@ -161,6 +161,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
 
       let active = true
       let canceled = false
+      let failed = false
       let checkout: CheckoutController | undefined
       let unsubscribe: (() => void) | undefined
 
@@ -199,13 +200,16 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
             if (event.type === 'ready') callbacksRef.current.onReady?.(event)
             if (event.type === 'completed')
               callbacksRef.current.onCompleted?.(event)
-            if (event.type === 'error') callbacksRef.current.onError?.(event)
+            if (event.type === 'failed') {
+              failed = true
+              callbacksRef.current.onFailed?.(event)
+            }
           })
           if (presentation === 'modal') await instance.present()
           else await instance.mount(target!)
         })
         .catch((error: unknown) => {
-          if (active && !canceled)
+          if (active && !canceled && !failed)
             callbacksRef.current.onError?.(asError(error))
         })
 

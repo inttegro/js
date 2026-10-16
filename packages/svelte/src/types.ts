@@ -1,6 +1,5 @@
 import type {
   CheckoutAppearance,
-  CheckoutErrorEvent,
   CheckoutEvent,
   CheckoutFeatures,
   CheckoutPresentation,
@@ -34,8 +33,11 @@ export interface CheckoutPropsBase {
    */
   onCompleted?:
     ((event: Extract<CheckoutEvent, { type: 'completed' }>) => void) | undefined
-  /** Called for loader/mount failures and sanitized hosted errors. */
-  onError?: ((event: CheckoutErrorEvent | Error) => void) | undefined
+  /** Called when Checkout reaches a terminal failure state. */
+  onFailed?:
+    ((event: Extract<CheckoutEvent, { type: 'failed' }>) => void) | undefined
+  /** Called for loader or mount failures. */
+  onError?: ((error: Error) => void) | undefined
   /** Called for every sanitized lifecycle event. */
   onEvent?: ((event: CheckoutEvent) => void) | undefined
   /** Called once Checkout is initialized and interactive. */

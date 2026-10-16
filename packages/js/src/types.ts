@@ -169,157 +169,140 @@ export interface CheckoutUpdateOptions {
  */
 export type CheckoutState = 'idle' | 'mounting' | 'ready' | 'destroyed'
 
-interface CheckoutEventBase {
-  /**
-   * ISO 8601 timestamp recorded by hosted Checkout when the event occurred.
-   * Use it for ordering and telemetry context, not as proof of payment.
-   */
-  occurredAt: string
+/** Money returned in Checkout lifecycle Order snapshots. */
+export interface CheckoutMoney {
+  /** Amount in the currency's minor unit. */
+  value: number
+  /** ISO 4217 currency code. */
+  currency: string
 }
 
-/**
- * Emitted once the hosted checkout is initialized and interactive.
- *
- * The corresponding {@link CheckoutController.mount} promise resolves at the
- * same point. This event means the UI is ready; it does not mean the Order is
- * payable or paid.
- *
- * @category Events
- */
+/** Client-safe Order snapshot shared by every Inttegro Checkout SDK. */
+export interface CheckoutOrder {
+  /** Public identifier used for server-side reconciliation. */
+  id: string
+  /** Current Checkout payment state. */
+  status:
+    | 'requires_payment'
+    | 'requires_action'
+    | 'processing'
+    | 'paid'
+    | 'failed'
+    | 'expired'
+    | 'canceled'
+  /** Merchant identity safe to show to the payer. */
+  merchant: { displayName: string }
+  /** Authoritative Order total. */
+  amount: CheckoutMoney
+  /** ISO 8601 expiry time, when the Order expires. */
+  expiresAt?: string | undefined
+  /** Client-safe Order lines shown by Checkout. */
+  lineItems: Array<{
+    id: string
+    name: string
+    quantity?: number | undefined
+    total: CheckoutMoney
+  }>
+  /** Secure Order documents currently available to the payer. */
+  documents: {
+    invoiceUrl?: string | undefined
+    receiptUrl?: string | undefined
+  }
+}
+
+/** Payer action still required by Checkout. */
+export interface CheckoutAction {
+  /** Kind of action Checkout is presenting to the payer. */
+  type: 'confirmation' | 'authorization' | 'redirect'
+  /** ISO 8601 time after which the current action must be refreshed. */
+  expiresAt?: string | undefined
+}
+
+/** Sanitized failure details safe for application logic and telemetry. */
+export interface CheckoutFailure {
+  /** Stable machine-readable failure category. */
+  code: string
+  /** Sanitized description safe for application diagnostics. */
+  message: string
+  /** Whether Checkout can offer another attempt in this presentation. */
+  recoverable: boolean
+}
+
+interface CheckoutEventBase {
+  /** ISO 8601 time at which Checkout emitted the event. */
+  occurredAt: string
+  /** Random identifier for one Checkout presentation. */
+  flowId: string
+  /** Monotonically increasing event number within the flow. */
+  sequence: number
+}
+
+/** Emitted when a new Checkout presentation begins. */
+export interface CheckoutPresentedEvent extends CheckoutEventBase {
+  type: 'presented'
+}
+
+/** Emitted when hosted Checkout is interactive. */
 export interface CheckoutReadyEvent extends CheckoutEventBase {
-  /** Event discriminator. */
   type: 'ready'
 }
 
-/**
- * Emitted when payer input changes the completion state of the form.
- *
- * Treat `complete` as a presentation hint only. Checkout revalidates the input
- * before starting payment, and your server remains the authority for final
- * Order status.
- *
- * @category Events
- */
+/** Emitted when payer input changes the completion state of the form. */
 export interface CheckoutChangeEvent extends CheckoutEventBase {
-  /** Event discriminator. */
   type: 'change'
-  /** Whether the currently visible payment form has enough valid input to submit. */
   complete: boolean
-  /** Selected payment-method family, when Checkout can expose it safely. */
   paymentMethod?: 'mobile_money' | undefined
 }
 
-/**
- * Emitted when the payer submits valid details and a payment attempt begins.
- *
- * Use this for progress telemetry or to disable surrounding navigation. Do not
- * treat it as authorization or confirmation that funds moved.
- *
- * @category Events
- */
-export interface CheckoutPaymentAttemptEvent extends CheckoutEventBase {
-  /** Event discriminator. */
-  type: 'paymentAttempt'
+/** Emitted when a Purchase Intent has produced the Order being paid. */
+export interface CheckoutOrderPreparedEvent extends CheckoutEventBase {
+  type: 'orderPrepared'
+  order: CheckoutOrder
 }
 
-/**
- * Emitted when a payment requires an additional payer step.
- *
- * The hosted experience owns the confirmation UI. The host application can use
- * this event for non-sensitive analytics or to keep a modal open, but should
- * not collect confirmation codes or intercept provider redirects.
- *
- * @category Events
- */
-export interface CheckoutConfirmationRequiredEvent extends CheckoutEventBase {
-  /** Event discriminator. */
-  type: 'confirmationRequired'
-  /**
-   * Shape of the next step: approval in another channel, an in-frame code, or
-   * a user-initiated redirect.
-   */
-  kind: 'authorization' | 'code' | 'redirect'
+/** Emitted when Checkout starts a payment attempt. */
+export interface CheckoutPaymentAttemptStartedEvent extends CheckoutEventBase {
+  type: 'paymentAttemptStarted'
+  order: CheckoutOrder
 }
 
-/**
- * Emitted when one payment attempt ends without completing the Order.
- *
- * If `recoverable` is true, Checkout remains responsible for presenting an
- * appropriate retry or correction path. If false, do not force an automatic
- * retry; allow Checkout to show the terminal outcome and reconcile Order state
- * from your server.
- *
- * @category Events
- */
+/** Emitted while Checkout guides the payer through an additional action. */
+export interface CheckoutPaymentActionRequiredEvent extends CheckoutEventBase {
+  type: 'paymentActionRequired'
+  order: CheckoutOrder
+  action: CheckoutAction
+}
+
+/** Emitted while a submitted payment remains pending. */
+export interface CheckoutPaymentProcessingEvent extends CheckoutEventBase {
+  type: 'paymentProcessing'
+  order: CheckoutOrder
+}
+
+/** Emitted when one payment attempt fails without ending Checkout. */
 export interface CheckoutPaymentAttemptFailedEvent extends CheckoutEventBase {
-  /** Event discriminator. */
   type: 'paymentAttemptFailed'
-  /** Stable hosted-checkout failure code for telemetry and coarse UI decisions. */
-  code: string
-  /** Whether the same Checkout can offer the payer another attempt. */
-  recoverable: boolean
+  order: CheckoutOrder
+  failure: CheckoutFailure
 }
 
-/**
- * Emitted when hosted Checkout reaches its successful terminal state.
- *
- * Navigate to your completion view or begin server-side reconciliation here.
- * For fulfillment, independently retrieve the Order or process the signed
- * server webhook; a browser event can be interrupted, replayed, or suppressed.
- *
- * @category Events
- */
+/** Emitted when Checkout reaches its successful terminal experience. */
 export interface CheckoutCompletedEvent extends CheckoutEventBase {
-  /** Event discriminator. */
   type: 'completed'
+  order: CheckoutOrder
 }
 
-/**
- * Emitted when the payer deliberately exits or cancels the hosted flow.
- *
- * Cancellation is not a payment failure and does not guarantee that no attempt
- * is pending. Preserve the Order reference so your server can reconcile or the
- * payer can return later.
- *
- * @category Events
- */
+/** Emitted when the payer deliberately leaves Checkout before completion. */
 export interface CheckoutCanceledEvent extends CheckoutEventBase {
-  /** Event discriminator. */
   type: 'canceled'
+  order?: CheckoutOrder | undefined
 }
 
-/**
- * Safe error details emitted by hosted Checkout.
- *
- * The object excludes account numbers, billing details, confirmation values,
- * customer identifiers, Order references, and raw provider responses.
- *
- * @category Errors
- */
-export interface CheckoutErrorDetail {
-  /** Stable reason for the hosted-checkout error. */
-  code: string
-  /** Human-readable diagnostic description. */
-  message: string
-  /** Whether hosted Checkout can continue without replacing the controller. */
-  recoverable: boolean
-}
-
-/**
- * Emitted when the hosted experience encounters an operational error.
- *
- * This event is distinct from a rejected `CheckoutController.mount`,
- * which indicates that the SDK could not initialize Checkout. Recoverable
- * hosted errors remain inside the payment UI; use the event for observability
- * without rendering duplicate or more technical error copy around the frame.
- *
- * @category Events
- */
-export interface CheckoutErrorEvent extends CheckoutEventBase {
-  /** Event discriminator. */
-  type: 'error'
-  /** Sanitized failure details safe for application telemetry. */
-  error: CheckoutErrorDetail
+/** Emitted when Checkout cannot continue the current presentation. */
+export interface CheckoutFailedEvent extends CheckoutEventBase {
+  type: 'failed'
+  order?: CheckoutOrder | undefined
+  failure: CheckoutFailure
 }
 
 /**
@@ -331,14 +314,17 @@ export interface CheckoutErrorEvent extends CheckoutEventBase {
  * @category Events
  */
 export type CheckoutEvent =
+  | CheckoutPresentedEvent
   | CheckoutReadyEvent
   | CheckoutChangeEvent
-  | CheckoutPaymentAttemptEvent
-  | CheckoutConfirmationRequiredEvent
+  | CheckoutOrderPreparedEvent
+  | CheckoutPaymentAttemptStartedEvent
+  | CheckoutPaymentActionRequiredEvent
+  | CheckoutPaymentProcessingEvent
   | CheckoutPaymentAttemptFailedEvent
   | CheckoutCompletedEvent
   | CheckoutCanceledEvent
-  | CheckoutErrorEvent
+  | CheckoutFailedEvent
 
 /**
  * Valid event names accepted by {@link CheckoutController.on}.
@@ -351,7 +337,7 @@ export type CheckoutEventType = CheckoutEvent['type']
  * Selects the payload associated with one {@link CheckoutEventType}.
  *
  * This powers type-safe event callbacks. For example,
- * `CheckoutEventOfType<'error'>` resolves to {@link CheckoutErrorEvent}.
+ * `CheckoutEventOfType<'failed'>` resolves to {@link CheckoutFailedEvent}.
  *
  * @typeParam Type - Event discriminator to select.
  * @category Events

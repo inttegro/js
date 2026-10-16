@@ -2,7 +2,6 @@ import {
   loadInttegro,
   type CheckoutAppearance,
   type CheckoutController,
-  type CheckoutErrorEvent,
   type CheckoutEvent,
   type CheckoutFeatures,
   type CheckoutOptions,
@@ -71,7 +70,8 @@ export interface CheckoutExposed {
  * - `event` for every sanitized Checkout lifecycle event;
  * - `canceled` when a payer dismisses managed modal Checkout;
  * - `completed` at the successful hosted terminal state; and
- * - `error` for loader/mount failures or sanitized hosted errors.
+ * - `failed` for terminal Checkout failure.
+ * - `error` for loader or mount failures.
  *
  * Keep the component mounted while payment or confirmation is pending. On
  * unmount it removes its event subscription and permanently destroys the
@@ -120,7 +120,8 @@ export const Checkout = defineComponent({
   emits: {
     canceled: (_event: Extract<CheckoutEvent, { type: 'canceled' }>) => true,
     completed: (_event: Extract<CheckoutEvent, { type: 'completed' }>) => true,
-    error: (_event: CheckoutErrorEvent | Error) => true,
+    failed: (_event: Extract<CheckoutEvent, { type: 'failed' }>) => true,
+    error: (_error: Error) => true,
     event: (_event: CheckoutEvent) => true,
     ready: (_event: Extract<CheckoutEvent, { type: 'ready' }>) => true,
   },
@@ -143,6 +144,7 @@ export const Checkout = defineComponent({
       const target = container.value
       const currentGeneration = generation
       let canceled = false
+      let failed = false
       if (!target) return
       try {
         const inttegro = await loadInttegro()
@@ -171,12 +173,15 @@ export const Checkout = defineComponent({
           }
           if (event.type === 'ready') emit('ready', event)
           if (event.type === 'completed') emit('completed', event)
-          if (event.type === 'error') emit('error', event)
+          if (event.type === 'failed') {
+            failed = true
+            emit('failed', event)
+          }
         })
         if (props.presentation === 'modal') await instance.present()
         else await instance.mount(target)
       } catch (error: unknown) {
-        if (generation !== currentGeneration || canceled) return
+        if (generation !== currentGeneration || canceled || failed) return
         emit(
           'error',
           error instanceof Error

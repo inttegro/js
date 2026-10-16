@@ -16,6 +16,7 @@
     locale,
     onCanceled,
     onCompleted,
+    onFailed,
     onError,
     onEvent,
     onReady,
@@ -57,6 +58,7 @@
 
     let active = true
     let canceled = false
+    let failed = false
     let instance: CheckoutController | undefined
     let unsubscribe: (() => void) | undefined
 
@@ -87,13 +89,16 @@
           }
           if (event.type === 'ready') onReady?.(event)
           if (event.type === 'completed') onCompleted?.(event)
-          if (event.type === 'error') onError?.(event)
+          if (event.type === 'failed') {
+            failed = true
+            onFailed?.(event)
+          }
         })
         if (identity.presentation === 'modal') await instance.present()
         else await instance.mount(container)
       })
       .catch((error: unknown) => {
-        if (active && !canceled) {
+        if (active && !canceled && !failed) {
           onError?.(
             error instanceof Error
               ? error

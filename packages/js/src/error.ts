@@ -57,7 +57,7 @@ export type InttegroCheckoutErrorCode =
  *
  * This error describes SDK and browser failures. Payment failures reported by
  * the hosted experience arrive as {@link CheckoutPaymentAttemptFailedEvent} or
- * {@link CheckoutErrorEvent} instead. That distinction lets an application
+ * {@link CheckoutFailedEvent} instead. That distinction lets an application
  * separate integration monitoring from customer payment outcomes.
  *
  * @example Handle a failed mount without inspecting error text
