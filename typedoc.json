@@ -37,6 +37,9 @@
     "vue"
   ],
   "packageOptions": {
+    "displayBasePath": "../..",
+    "disableGit": true,
+    "sourceLinkTemplate": "https://github.com/inttegro/js/blob/{gitRevision}/{path}#L{line}",
     "excludePrivate": true,
     "excludeProtected": true,
     "excludeInternal": true
