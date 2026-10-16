@@ -24,7 +24,7 @@
  * @module @inttegro/svelte
  */
 export { default as Checkout } from './Checkout.svelte'
-export type { CheckoutProps } from './types'
+export type { CheckoutProps, CheckoutPropsBase } from './types'
 export type {
   CheckoutAppearance,
   CheckoutErrorEvent,

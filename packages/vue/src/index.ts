@@ -3,7 +3,12 @@
  *
  * @module @inttegro/vue
  */
-export { Checkout, type CheckoutExposed, type CheckoutProps } from './Checkout'
+export {
+  Checkout,
+  type CheckoutExposed,
+  type CheckoutProps,
+  type CheckoutPropsBase,
+} from './Checkout'
 export type {
   CheckoutAppearance,
   CheckoutErrorEvent,

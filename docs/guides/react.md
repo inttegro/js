@@ -174,4 +174,4 @@ If your Content Security Policy requires a per-response script nonce, the adapte
 - [Framework adapter overview](./framework-adapters.md)
 - [Lifecycle and reconciliation](./lifecycle-and-reconciliation.md)
 - [Security, CSP, and accessibility](./security-csp-and-accessibility.md)
-- {@linkcode @inttegro/react!CheckoutProps:interface | React Checkout props}
+- {@linkcode @inttegro/react!CheckoutProps:type | React Checkout props}

@@ -18,6 +18,7 @@ import {
   type CheckoutErrorEvent,
   type CheckoutEvent,
   type CheckoutFeatures,
+  type CheckoutOptions,
   type CheckoutPresentation,
   type CheckoutUpdateOptions,
 } from '@inttegro/js'
@@ -181,7 +182,7 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
           purchaseIntentId: this.purchaseIntentId,
           timeout: this.timeout,
           title: this.title,
-        }),
+        }) as CheckoutOptions,
       )
       if (generation !== this.generation) {
         checkout.destroy()

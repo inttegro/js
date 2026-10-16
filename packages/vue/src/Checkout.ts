@@ -5,6 +5,7 @@ import {
   type CheckoutErrorEvent,
   type CheckoutEvent,
   type CheckoutFeatures,
+  type CheckoutOptions,
   type CheckoutPresentation,
 } from '@inttegro/js'
 import {
@@ -26,7 +27,7 @@ import {
  *
  * @category Vue
  */
-interface CheckoutPropsBase {
+export interface CheckoutPropsBase {
   /** Initial and reactive theme preference for hosted Checkout. */
   appearance?: CheckoutAppearance | undefined
   /** Hosted Checkout content and actions. Changing it replaces the controller. */
@@ -155,7 +156,7 @@ export const Checkout = defineComponent({
             purchaseIntentId: props.purchaseIntentId,
             timeout: props.timeout,
             title: props.title,
-          }),
+          }) as CheckoutOptions,
         )
         if (generation !== currentGeneration) {
           instance.destroy()

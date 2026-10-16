@@ -157,4 +157,4 @@ The adapter does not currently accept `loadInttegro()` options. Sites whose Cont
 - [Framework adapter overview](./framework-adapters.md)
 - [Lifecycle and reconciliation](./lifecycle-and-reconciliation.md)
 - [Security, CSP, and accessibility](./security-csp-and-accessibility.md)
-- {@linkcode @inttegro/svelte!CheckoutProps:interface | Svelte Checkout props}
+- {@linkcode @inttegro/svelte!CheckoutProps:type | Svelte Checkout props}

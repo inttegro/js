@@ -182,7 +182,7 @@ export const Checkout = forwardRef<CheckoutHandle, CheckoutProps>(
               purchaseIntentId,
               timeout,
               title,
-            }),
+            }) as CheckoutOptions,
           )
           if (!active) {
             instance.destroy()

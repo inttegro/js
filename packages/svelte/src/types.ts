@@ -16,7 +16,7 @@ import type {
  *
  * @category Svelte
  */
-interface CheckoutPropsBase {
+export interface CheckoutPropsBase {
   /** Initial and reactive theme preference for hosted Checkout. */
   appearance?: CheckoutAppearance | undefined
   /** Hosted Checkout content and actions. Changing it replaces the controller. */
@@ -27,23 +27,20 @@ interface CheckoutPropsBase {
   locale?: string | undefined
   /** Called when a payer dismisses managed modal Checkout before completion. */
   onCanceled?:
-    | ((event: Extract<CheckoutEvent, { type: 'canceled' }>) => void)
-    | undefined
+    ((event: Extract<CheckoutEvent, { type: 'canceled' }>) => void) | undefined
   /**
    * Called after the successful hosted terminal state. Reconcile the Order on
    * your server before fulfillment.
    */
   onCompleted?:
-    | ((event: Extract<CheckoutEvent, { type: 'completed' }>) => void)
-    | undefined
+    ((event: Extract<CheckoutEvent, { type: 'completed' }>) => void) | undefined
   /** Called for loader/mount failures and sanitized hosted errors. */
   onError?: ((event: CheckoutErrorEvent | Error) => void) | undefined
   /** Called for every sanitized lifecycle event. */
   onEvent?: ((event: CheckoutEvent) => void) | undefined
   /** Called once Checkout is initialized and interactive. */
   onReady?:
-    | ((event: Extract<CheckoutEvent, { type: 'ready' }>) => void)
-    | undefined
+    ((event: Extract<CheckoutEvent, { type: 'ready' }>) => void) | undefined
   /** Displays Checkout inline by default or in an Inttegro-managed modal. */
   presentation?: CheckoutPresentation | undefined
   /** Mount timeout from 1,000–60,000 ms; defaults to 15,000 ms. */

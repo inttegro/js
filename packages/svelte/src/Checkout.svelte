@@ -3,6 +3,7 @@
     loadInttegro,
     type CheckoutController,
     type CheckoutEvent,
+    type CheckoutOptions,
     type CheckoutUpdateOptions,
   } from '@inttegro/js'
   import { untrack } from 'svelte'
@@ -44,7 +45,14 @@
   }
 
   $effect(() => {
-    const identity = { features, orderId, purchaseIntentId, presentation, timeout, title }
+    const identity = {
+      features,
+      orderId,
+      purchaseIntentId,
+      presentation,
+      timeout,
+      title,
+    }
     if (!container) return
 
     let active = true
@@ -64,7 +72,7 @@
             purchaseIntentId: identity.purchaseIntentId,
             timeout: identity.timeout,
             title: identity.title,
-          }),
+          }) as CheckoutOptions,
         )
         if (!active) {
           instance.destroy()

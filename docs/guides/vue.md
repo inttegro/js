@@ -161,4 +161,4 @@ The current adapter does not expose `loadInttegro()` options. If a strict Conten
 - [Framework adapter overview](./framework-adapters.md)
 - [Lifecycle and reconciliation](./lifecycle-and-reconciliation.md)
 - [Security, CSP, and accessibility](./security-csp-and-accessibility.md)
-- {@linkcode @inttegro/vue!CheckoutProps:interface | Vue Checkout props}
+- {@linkcode @inttegro/vue!CheckoutProps:type | Vue Checkout props}

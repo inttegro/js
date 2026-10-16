@@ -50,7 +50,7 @@ export interface CheckoutFeatures {
  *
  * @category Configuration
  */
-interface CheckoutOptionsBase {
+export interface CheckoutOptionsBase {
   /** Initial color-scheme preferences for the hosted experience. */
   appearance?: CheckoutAppearance | undefined
   /** Optional hosted Checkout content and actions. */

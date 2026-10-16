@@ -11,8 +11,8 @@ import type { InttegroLoadOptions, InttegroRuntime } from './types'
  *
  * @category Loading Checkout
  */
-const INTTEGRO_JS_VERSION = '0.3.0'
-export const INTTEGRO_JS_URL = 'https://js.inttegro.com/inttegro.js@0.3.0'
+const INTTEGRO_JS_VERSION = '0.4.0'
+export const INTTEGRO_JS_URL = 'https://js.inttegro.com/inttegro.js@0.4.0'
 
 const LOAD_TIMEOUT_MS = 15_000
 const SCRIPT_MARKER = 'data-inttegro-js'
