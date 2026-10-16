@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises'
-
 const manifestUrl = 'https://js.inttegro.com/manifest.json'
-const runtimeUrl = 'https://js.inttegro.com/inttegro.js@0.4.0'
+const runtimeVersion = '0.5.0'
+const runtimeUrl = `https://js.inttegro.com/inttegro.js@${runtimeVersion}`
 const response = await fetch(manifestUrl, {
   cache: 'no-store',
   headers: { 'cache-control': 'no-cache' },
@@ -18,17 +17,11 @@ if (response.url !== manifestUrl) {
 }
 
 const manifest = await response.json()
-const packageMetadata = JSON.parse(
-  await readFile(
-    new URL('../packages/js/package.json', import.meta.url),
-    'utf8',
-  ),
-)
 if (
   !isRecord(manifest) ||
   manifest.runtime !== runtimeUrl ||
-  manifest.version !== packageMetadata.version ||
-  manifest.protocolVersion !== 1 ||
+  manifest.version !== runtimeVersion ||
+  manifest.protocolVersion !== 2 ||
   typeof manifest.sha256 !== 'string' ||
   !/^[a-f0-9]{64}$/.test(manifest.sha256)
 ) {
