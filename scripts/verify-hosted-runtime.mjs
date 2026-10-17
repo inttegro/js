@@ -29,7 +29,6 @@ if (
   !isRecord(manifest) ||
   manifest.runtime !== runtimeUrl ||
   manifest.version !== runtimeVersion ||
-  manifest.protocolVersion !== 2 ||
   typeof manifest.sha256 !== 'string' ||
   !/^[a-f0-9]{64}$/.test(manifest.sha256)
 ) {

@@ -90,7 +90,7 @@ describe('loadInttegro', () => {
     expect(document.scripts).toHaveLength(1)
     ;(window as Window & { Inttegro?: unknown }).Inttegro = fakeRuntime()
     runtimeScript().dispatchEvent(new Event('load'))
-    await expect(retried).resolves.toMatchObject({ protocolVersion: 1 })
+    await expect(retried).resolves.toMatchObject({ version: runtimeVersion })
   })
 })
 
@@ -105,7 +105,6 @@ function runtimeScript(): HTMLScriptElement {
 function fakeRuntime() {
   return {
     version: runtimeVersion,
-    protocolVersion: 1,
     createCheckout: vi.fn(),
   }
 }

@@ -166,7 +166,6 @@ function readRuntime(): InttegroRuntime | undefined {
   const runtime = readWindowRuntime()
   if (
     !runtime ||
-    runtime.protocolVersion !== 1 ||
     runtime.version !== INTTEGRO_JS_VERSION ||
     typeof runtime.createCheckout !== 'function'
   ) {

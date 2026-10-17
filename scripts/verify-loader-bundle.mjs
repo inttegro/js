@@ -148,7 +148,6 @@ try {
   }
   const runtime = {
     createCheckout() {},
-    protocolVersion: 1,
     version: runtimeVersion,
   }
   globalThis.window.Inttegro = runtime

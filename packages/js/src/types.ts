@@ -103,11 +103,6 @@ export interface InttegroRuntime {
   /** Hosted runtime release currently executing on the page. */
   readonly version: string
   /**
-   * Major browser-to-frame messaging protocol implemented by this runtime.
-   * The loader rejects runtimes that do not implement the supported version.
-   */
-  readonly protocolVersion: number
-  /**
    * Creates an unmounted controller for a finalized Order or a Purchase Intent
    * whose price is selected by the customer inside Checkout.
    *
