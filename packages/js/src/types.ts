@@ -23,6 +23,11 @@ export type CheckoutPresentation = 'embedded' | 'modal'
  */
 export interface CheckoutAppearance {
   /**
+   * Optional primary action color as a six-digit hexadecimal color. When
+   * omitted, Checkout uses the merchant application's configured accent.
+   */
+  primaryColor?: string | undefined
+  /**
    * Checkout color scheme. Defaults to the hosted experience's system-aware
    * behavior when omitted.
    */

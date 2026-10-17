@@ -123,10 +123,14 @@ Use `system` unless your checkout surface deliberately has a fixed theme. It fol
 ```ts
 const checkout = inttegro.createCheckout({
   orderId,
-  appearance: { theme: 'system' },
+  appearance: { primaryColor: '#E8117F', theme: 'system' },
   locale: 'en-GH',
 })
 ```
+
+Checkout uses the application accent configured in Inttegro by default. Set
+`primaryColor` only when this checkout needs a deliberate six-digit hex-color
+override; Checkout chooses a contrast-safe foreground automatically.
 
 You can change presentation settings without replacing Checkout or discarding payer progress:
 

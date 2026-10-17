@@ -125,7 +125,7 @@ if (!inttegro) {
 
 const checkout = inttegro.createCheckout({
   orderId: 'YOUR_ORDER_ID',
-  appearance: { theme: 'system' },
+  appearance: { primaryColor: '#E8117F', theme: 'system' },
   features: {
     showLineItems: true,
     showInvoiceDownload: true,
@@ -203,7 +203,7 @@ All integrations accept these options:
 
 | Option             | Description                                                  |
 | ------------------ | ------------------------------------------------------------ |
-| `appearance`       | Sets the `light`, `dark`, or `system` theme.                 |
+| `appearance`       | Sets the theme and optional primary action color.            |
 | `features`         | Controls line items, document downloads, and method changes. |
 | `locale`           | Sets a BCP 47 locale preference, such as `en-GH`.            |
 | `orderId`          | Identifies the finalized Order to collect payment for.       |

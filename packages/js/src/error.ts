@@ -10,6 +10,7 @@
  *   once without an intervening {@link CheckoutController.unmount}.
  * - `destroyed`: an operation attempted to mount a controller after
  *   {@link CheckoutController.destroy} made it permanently unusable.
+ * - `invalid_appearance`: an appearance value is malformed or unsupported.
  * - `invalid_locale`: the supplied locale is not a well-formed BCP 47 tag.
  * - `invalid_features`: a Checkout feature flag is not a boolean.
  * - `invalid_checkout_reference`: the configuration does not provide exactly
@@ -36,6 +37,7 @@
 export type InttegroCheckoutErrorCode =
   | 'already_mounted'
   | 'destroyed'
+  | 'invalid_appearance'
   | 'invalid_locale'
   | 'invalid_features'
   | 'invalid_checkout_reference'
