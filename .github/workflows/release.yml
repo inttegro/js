@@ -3,13 +3,19 @@ name: Release npm packages
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to resume
+        required: true
+        type: string
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: npm-release-${{ github.event.release.tag_name }}
+  group: npm-release-${{ github.event.release.tag_name || inputs.release_tag }}
   cancel-in-progress: false
 
 jobs:
@@ -21,6 +27,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -31,11 +38,56 @@ jobs:
       - run: npm run check
       - run: npm run verify:versions
         env:
-          RELEASE_VERSION: ${{ github.event.release.tag_name }}
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
       - name: Verify a compatible private runtime is live
         run: npm run verify:hosted-runtime
-      - run: npm publish --workspace @inttegro/js --access public --provenance
-      - run: npm publish --workspace @inttegro/react --access public --provenance
-      - run: npm publish --workspace @inttegro/vue --access public --provenance
-      - run: npm publish --workspace @inttegro/svelte --access public --provenance
-      - run: npm publish packages/angular/dist --access public --provenance
+      - name: Publish @inttegro/js when missing
+        run: |
+          version="${RELEASE_VERSION#v}"
+          if npm view "@inttegro/js@${version}" version --prefer-online >/dev/null 2>&1; then
+            echo "@inttegro/js@${version} is already published."
+          else
+            npm publish --workspace @inttegro/js --access public --provenance
+          fi
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
+      - name: Publish @inttegro/react when missing
+        run: |
+          version="${RELEASE_VERSION#v}"
+          if npm view "@inttegro/react@${version}" version --prefer-online >/dev/null 2>&1; then
+            echo "@inttegro/react@${version} is already published."
+          else
+            npm publish --workspace @inttegro/react --access public --provenance
+          fi
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
+      - name: Publish @inttegro/vue when missing
+        run: |
+          version="${RELEASE_VERSION#v}"
+          if npm view "@inttegro/vue@${version}" version --prefer-online >/dev/null 2>&1; then
+            echo "@inttegro/vue@${version} is already published."
+          else
+            npm publish --workspace @inttegro/vue --access public --provenance
+          fi
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
+      - name: Publish @inttegro/svelte when missing
+        run: |
+          version="${RELEASE_VERSION#v}"
+          if npm view "@inttegro/svelte@${version}" version --prefer-online >/dev/null 2>&1; then
+            echo "@inttegro/svelte@${version} is already published."
+          else
+            npm publish --workspace @inttegro/svelte --access public --provenance
+          fi
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
+      - name: Publish @inttegro/angular when missing
+        run: |
+          version="${RELEASE_VERSION#v}"
+          if npm view "@inttegro/angular@${version}" version --prefer-online >/dev/null 2>&1; then
+            echo "@inttegro/angular@${version} is already published."
+          else
+            npm publish packages/angular/dist --access public --provenance
+          fi
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.release_tag }}
