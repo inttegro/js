@@ -53,7 +53,7 @@ Subresource Integrity is not appropriate for the versioned hosted URL when Intte
 
 ## Keep secrets and personal data out of the host page
 
-Pass only a client-safe finalized Order ID or customer-selected-amount Purchase Intent ID in {@linkcode @inttegro/js!CheckoutOptions:type | CheckoutOptions}. Secret API keys belong on your server. Do not attach account numbers, billing addresses, phone numbers, provider confirmation codes, or payment-method identifiers to host-page analytics.
+Pass only a client-safe finalized Order ID or Purchase Intent ID in {@linkcode @inttegro/js!CheckoutOptions:type | CheckoutOptions}. Secret API keys belong on your server. Do not attach account numbers, billing addresses, phone numbers, provider confirmation codes, or payment-method identifiers to host-page analytics.
 
 Checkout events are deliberately sparse. Preserve that property when instrumenting the host application:
 

@@ -149,8 +149,7 @@ await checkout.mount('#checkout')
 `loadInttegro()` returns `null` during server-side rendering. Initialize and
 mount Checkout only in browser code.
 
-For a Buy link backed by a `customer_selected_amount` price, use its public
-Purchase Intent instead of an Order:
+For a Buy link, use its public Purchase Intent instead of creating an Order:
 
 ```ts
 const checkout = inttegro.createCheckout({
@@ -159,11 +158,13 @@ const checkout = inttegro.createCheckout({
 await checkout.mount('#checkout')
 ```
 
-The same option works with `checkout.present()`. Checkout first renders the
-authoritative currency, range, and suggested amounts. After the payer continues,
-Inttegro creates the finalized Order idempotently and replaces the amount picker
-with the ordinary payment experience. Provide exactly one of `orderId` or
-`purchaseIntentId`; suggested amounts are shortcuts, not an allow-list.
+The same option works with `checkout.present()`. A fixed-price Purchase Intent
+continues directly to payment after Inttegro creates its finalized Order
+idempotently. A customer-selected Purchase Intent first renders the authoritative
+currency, range, and suggested amounts; after the payer continues, Inttegro
+creates the finalized Order and replaces the picker with the ordinary payment
+experience. Provide exactly one of `orderId` or `purchaseIntentId`; suggested
+amounts are shortcuts, not an allow-list.
 
 To open the same Checkout in a responsive modal, call `present()` instead of
 building a dialog and mounting into it:
@@ -206,7 +207,7 @@ All integrations accept these options:
 | `features`         | Controls line items, document downloads, and method changes. |
 | `locale`           | Sets a BCP 47 locale preference, such as `en-GH`.            |
 | `orderId`          | Identifies the finalized Order to collect payment for.       |
-| `purchaseIntentId` | Identifies a Buy link whose amount the payer chooses.        |
+| `purchaseIntentId` | Identifies a fixed-price or customer-selected Buy link.      |
 | `timeout`          | Sets how long Checkout waits to become ready.                |
 | `title`            | Provides an accessible title for the hosted experience.      |
 

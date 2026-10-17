@@ -15,8 +15,9 @@ import { CheckoutComponent } from '@inttegro/angular'
 export class PaymentPage {}
 ```
 
-For a `customer_selected_amount` Buy link, bind `purchaseIntentId` instead of
-`orderId`. This works in both embedded and modal presentations:
+For a Buy link, bind `purchaseIntentId` instead of `orderId`. Fixed pricing
+continues directly to payment; customer-selected pricing renders the amount
+picker first. This works in both embedded and modal presentations:
 
 ```html
 <inttegro-checkout [purchaseIntentId]="purchaseIntentId" presentation="modal" />

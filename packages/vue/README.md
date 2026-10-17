@@ -14,8 +14,9 @@ import { Checkout } from '@inttegro/vue'
 </template>
 ```
 
-For a `customer_selected_amount` Buy link, pass `purchase-intent-id` instead of
-`order-id`. This works in both embedded and modal presentations:
+For a Buy link, pass `purchase-intent-id` instead of `order-id`. Fixed pricing
+continues directly to payment; customer-selected pricing renders the amount
+picker first. This works in both embedded and modal presentations:
 
 ```vue
 <Checkout :purchase-intent-id="purchaseIntentId" presentation="modal" />

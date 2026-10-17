@@ -80,7 +80,7 @@ export class CheckoutComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() locale?: string
   /** Client-safe reference for the finalized Order being paid. */
   @Input() orderId?: string
-  /** Client-safe amount-selection Purchase Intent. Mutually exclusive with orderId. */
+  /** Client-safe fixed or customer-selected Purchase Intent. Mutually exclusive with orderId. */
   @Input() purchaseIntentId?: string
   /** Displays Checkout inline by default or in an Inttegro-managed modal. */
   @Input() presentation: CheckoutPresentation = 'embedded'

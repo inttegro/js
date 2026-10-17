@@ -74,7 +74,7 @@ export interface CheckoutOptionsBase {
   timeout?: number | undefined
 }
 
-/** Configuration for either an existing Order or customer-selected amount flow. */
+/** Configuration for either an existing Order or a Purchase Intent flow. */
 export type CheckoutOptions = CheckoutOptionsBase &
   (
     | {
@@ -87,10 +87,6 @@ export type CheckoutOptions = CheckoutOptionsBase &
       }
     | {
         orderId?: never
-        /**
-         * Client-safe Purchase Intent whose price uses the
-         * `customer_selected_amount` variant.
-         */
         purchaseIntentId: string
       }
   )
