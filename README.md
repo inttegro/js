@@ -209,7 +209,7 @@ All integrations accept these options:
 | `orderId`          | Identifies the finalized Order to collect payment for.       |
 | `purchaseIntentId` | Identifies a fixed-price or customer-selected Buy link.      |
 | `timeout`          | Sets how long Checkout waits to become ready.                |
-| `title`            | Provides an accessible title for the hosted experience.      |
+| `title`            | Sets the visible modal title and accessible iframe title.     |
 
 Hosted Checkout keeps its existing behavior when `features` is omitted: line
 items are hidden, invoice and receipt actions are offered after successful

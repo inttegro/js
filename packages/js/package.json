@@ -1,6 +1,6 @@
 {
   "name": "@inttegro/js",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Controlled-origin loader and TypeScript types for Inttegro hosted workflows",
   "type": "module",
   "main": "./dist/index.cjs",

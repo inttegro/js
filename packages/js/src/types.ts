@@ -60,10 +60,7 @@ export interface CheckoutOptionsBase {
    * fall back to an Inttegro-supported locale.
    */
   locale?: string | undefined
-  /**
-   * Accessible title assigned to the hosted iframe. Defaults to `Checkout`.
-   * Describe the frame's purpose; this value is not visible payment-page copy.
-   */
+  /** Visible modal title and accessible iframe title. Defaults to `Payment`. */
   title?: string | undefined
   /**
    * Milliseconds to wait for the hosted checkout to emit `CheckoutReadyEvent`.
