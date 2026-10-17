@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 
 const packagePaths = [
+  'package.json',
   'packages/js/package.json',
   'packages/react/package.json',
   'packages/vue/package.json',
@@ -35,7 +36,10 @@ if (releaseVersion && releaseVersion !== version) {
 
 for (const { path, value } of packages) {
   if (value.dependencies?.['@inttegro/js'] !== version) {
-    if (value.name !== '@inttegro/js') {
+    if (
+      value.name !== '@inttegro/js' &&
+      value.name !== '@inttegro/js-workspace'
+    ) {
       throw new Error(`${path} must depend on @inttegro/js ${version}.`)
     }
   }

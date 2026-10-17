@@ -1,6 +1,8 @@
 import { InttegroCheckoutError } from './error'
 import type { InttegroLoadOptions, InttegroRuntime } from './types'
 
+declare const __INTTEGRO_PACKAGE_VERSION__: string
+
 /**
  * Fixed URL of the executable Checkout runtime hosted by Inttegro.
  *
@@ -11,8 +13,8 @@ import type { InttegroLoadOptions, InttegroRuntime } from './types'
  *
  * @category Loading Checkout
  */
-const INTTEGRO_JS_VERSION = '0.4.0'
-export const INTTEGRO_JS_URL = 'https://js.inttegro.com/inttegro.js@0.4.0'
+const INTTEGRO_JS_VERSION = __INTTEGRO_PACKAGE_VERSION__
+export const INTTEGRO_JS_URL = `https://js.inttegro.com/inttegro.js@${INTTEGRO_JS_VERSION}`
 
 const LOAD_TIMEOUT_MS = 15_000
 const SCRIPT_MARKER = 'data-inttegro-js'

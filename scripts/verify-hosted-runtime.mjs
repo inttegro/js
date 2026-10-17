@@ -1,5 +1,13 @@
+import { readFile } from 'node:fs/promises'
+
 const manifestUrl = 'https://js.inttegro.com/manifest.json'
-const runtimeVersion = '0.5.0'
+const packageMetadata = JSON.parse(
+  await readFile(
+    new URL('../packages/js/package.json', import.meta.url),
+    'utf8',
+  ),
+)
+const runtimeVersion = packageMetadata.version
 const runtimeUrl = `https://js.inttegro.com/inttegro.js@${runtimeVersion}`
 const response = await fetch(manifestUrl, {
   cache: 'no-store',

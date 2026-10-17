@@ -1,6 +1,6 @@
 {
   "name": "@inttegro/svelte",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Svelte components for Inttegro hosted workflows",
   "type": "module",
   "svelte": "./dist/index.js",
@@ -26,7 +26,7 @@
     "typecheck": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@inttegro/js": "0.5.2"
+    "@inttegro/js": "0.5.3"
   },
   "peerDependencies": {
     "svelte": ">=5"

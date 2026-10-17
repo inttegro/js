@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import packageMetadata from '../package.json' with { type: 'json' }
 
-const runtimeUrl = 'https://js.inttegro.com/inttegro.js@0.4.0'
+const runtimeVersion = packageMetadata.version
+const runtimeUrl = `https://js.inttegro.com/inttegro.js@${runtimeVersion}`
 
 beforeEach(() => {
   const append = document.head.append.bind(document.head)
@@ -41,7 +43,7 @@ describe('loadInttegro', () => {
     expect(script.crossOrigin).toBe('anonymous')
     expect(script.nonce).toBe('request-nonce')
     expect(script.referrerPolicy).toBe('origin')
-    expect(script.dataset.inttegroJs).toBe('0.4.0')
+    expect(script.dataset.inttegroJs).toBe(runtimeVersion)
 
     const runtime = fakeRuntime()
     ;(window as Window & { Inttegro?: unknown }).Inttegro = runtime
@@ -102,7 +104,7 @@ function runtimeScript(): HTMLScriptElement {
 
 function fakeRuntime() {
   return {
-    version: '0.4.0',
+    version: runtimeVersion,
     protocolVersion: 1,
     createCheckout: vi.fn(),
   }

@@ -1,6 +1,13 @@
 import { access, readdir, readFile } from 'node:fs/promises'
 
-const controlledRuntimeUrl = 'https://js.inttegro.com/inttegro.js@0.4.0'
+const packageMetadata = JSON.parse(
+  await readFile(
+    new URL('../packages/js/package.json', import.meta.url),
+    'utf8',
+  ),
+)
+const runtimeVersion = packageMetadata.version
+const controlledRuntimeUrl = `https://js.inttegro.com/inttegro.js@${runtimeVersion}`
 const forbiddenRuntimeMarkers = [
   '/embed/checkout/',
   'data-inttegro-checkout',
@@ -28,8 +35,11 @@ for (const path of [
   'packages/js/dist/index.cjs',
 ]) {
   const source = await readFile(new URL(`../${path}`, import.meta.url), 'utf8')
-  if (!source.includes(controlledRuntimeUrl)) {
-    throw new Error(`${path} does not contain the controlled runtime URL.`)
+  const pinnedRuntimeUrls = source.match(
+    /https:\/\/js\.inttegro\.com\/inttegro\.js@[0-9]+\.[0-9]+\.[0-9]+/g,
+  )
+  if (pinnedRuntimeUrls?.some((url) => url !== controlledRuntimeUrl)) {
+    throw new Error(`${path} contains a stale runtime URL.`)
   }
   for (const marker of forbiddenRuntimeMarkers) {
     if (source.includes(marker)) {
@@ -68,6 +78,11 @@ if ('createCheckout' in publicModule) {
 }
 if (typeof publicModule.loadInttegro !== 'function') {
   throw new Error('@inttegro/js must export loadInttegro().')
+}
+if (publicModule.INTTEGRO_JS_URL !== controlledRuntimeUrl) {
+  throw new Error(
+    `@inttegro/js ${runtimeVersion} must load ${controlledRuntimeUrl}.`,
+  )
 }
 
 const previousWindow = globalThis.window
@@ -134,7 +149,7 @@ try {
   const runtime = {
     createCheckout() {},
     protocolVersion: 1,
-    version: '0.4.0',
+    version: runtimeVersion,
   }
   globalThis.window.Inttegro = runtime
   script.dispatch('load')
