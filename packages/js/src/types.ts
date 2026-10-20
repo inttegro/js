@@ -12,6 +12,32 @@ export type CheckoutTheme = 'light' | 'dark' | 'system'
 /** Ways a framework adapter can display hosted Checkout. */
 export type CheckoutPresentation = 'embedded' | 'modal'
 
+/** Semantic colors used throughout hosted Checkout. */
+export interface CheckoutAppearanceColors {
+  /** Page background behind the payment surface. */
+  background?: string | undefined
+  /** Payment-card and control surface background. */
+  surface?: string | undefined
+  /** Primary text color. */
+  foreground?: string | undefined
+  /** Secondary and supporting text color. */
+  mutedForeground?: string | undefined
+  /** Default divider and control border color. */
+  border?: string | undefined
+  /** Keyboard-focus ring and active-field color. */
+  focus?: string | undefined
+}
+
+/** Colors for one family of interactive Checkout controls. */
+export interface CheckoutControlAppearance {
+  /** Control background color. */
+  background?: string | undefined
+  /** Control text color. */
+  foreground?: string | undefined
+  /** Control border color. */
+  border?: string | undefined
+}
+
 /**
  * Visual preferences applied inside the hosted Checkout frame.
  *
@@ -22,9 +48,18 @@ export type CheckoutPresentation = 'embedded' | 'modal'
  * @category Configuration
  */
 export interface CheckoutAppearance {
+  /** Semantic colors for the hosted payment surface. */
+  colors?: CheckoutAppearanceColors | undefined
+  /** Primary payment-action styling. */
+  button?: CheckoutControlAppearance | undefined
+  /** Text, amount, and account input styling. */
+  input?: CheckoutControlAppearance | undefined
+  /** Selected payment-method styling. */
+  selection?: CheckoutControlAppearance | undefined
   /**
    * Optional primary action color as a six-digit hexadecimal color. When
    * omitted, Checkout uses the merchant application's configured accent.
+   * Prefer the grouped appearance properties for complete theme control.
    */
   primaryColor?: string | undefined
   /**

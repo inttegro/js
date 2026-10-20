@@ -2,10 +2,12 @@ export { InttegroCheckoutError, type InttegroCheckoutErrorCode } from './error'
 export { INTTEGRO_JS_URL, loadInttegro } from './loader'
 export type {
   CheckoutAppearance,
+  CheckoutAppearanceColors,
   CheckoutAction,
   CheckoutCanceledEvent,
   CheckoutChangeEvent,
   CheckoutCompletedEvent,
+  CheckoutControlAppearance,
   CheckoutController,
   CheckoutEvent,
   CheckoutEventHandler,

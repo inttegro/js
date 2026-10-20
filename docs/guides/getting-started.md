@@ -132,6 +132,45 @@ Checkout uses the application accent configured in Inttegro by default. Set
 `primaryColor` only when this checkout needs a deliberate six-digit hex-color
 override; Checkout chooses a contrast-safe foreground automatically.
 
+For a checkout that must match a fixed application theme, group related color
+rules by their role:
+
+```ts
+const checkout = inttegro.createCheckout({
+  orderId,
+  appearance: {
+    theme: 'dark',
+    colors: {
+      background: '#000000',
+      surface: '#000000',
+      foreground: '#ffffff',
+      mutedForeground: '#a5a5a5',
+      border: '#333333',
+      focus: '#ffffff',
+    },
+    button: {
+      background: '#000000',
+      foreground: '#ffffff',
+      border: '#ffffff',
+    },
+    input: {
+      background: '#000000',
+      foreground: '#ffffff',
+      border: '#ffffff',
+    },
+    selection: {
+      background: '#000000',
+      foreground: '#ffffff',
+      border: '#ffffff',
+    },
+  },
+})
+```
+
+Appearance colors use six-digit hexadecimal values. Inttegro keeps layout,
+payment-method branding, validation, and accessible interaction states under
+the hosted Checkout's control.
+
 You can change presentation settings without replacing Checkout or discarding payer progress:
 
 ```ts
