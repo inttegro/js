@@ -12,6 +12,9 @@ export type CheckoutTheme = 'light' | 'dark' | 'system'
 /** Ways a framework adapter can display hosted Checkout. */
 export type CheckoutPresentation = 'embedded' | 'modal'
 
+/** Font families supported by hosted Checkout. */
+export type CheckoutFontFamily = 'sans-serif' | 'monospace'
+
 /** Semantic colors used throughout hosted Checkout. */
 export interface CheckoutAppearanceColors {
   /** Page background behind the payment surface. */
@@ -38,6 +41,18 @@ export interface CheckoutControlAppearance {
   border?: string | undefined
 }
 
+/** Typography applied throughout hosted Checkout. */
+export interface CheckoutTypographyAppearance {
+  /** Safe system font stack used by text and controls. */
+  fontFamily?: CheckoutFontFamily | undefined
+}
+
+/** Geometry applied to hosted Checkout surfaces and controls. */
+export interface CheckoutShapeAppearance {
+  /** Shared corner radius in pixels, from 0 through 24. */
+  borderRadius?: number | undefined
+}
+
 /**
  * Visual preferences applied inside the hosted Checkout frame.
  *
@@ -56,6 +71,10 @@ export interface CheckoutAppearance {
   input?: CheckoutControlAppearance | undefined
   /** Selected payment-method styling. */
   selection?: CheckoutControlAppearance | undefined
+  /** Typography used throughout the hosted payment experience. */
+  typography?: CheckoutTypographyAppearance | undefined
+  /** Surface and control geometry. */
+  shape?: CheckoutShapeAppearance | undefined
   /**
    * Optional primary action color as a six-digit hexadecimal color. When
    * omitted, Checkout uses the merchant application's configured accent.

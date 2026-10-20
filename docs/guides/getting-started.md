@@ -163,13 +163,21 @@ const checkout = inttegro.createCheckout({
       foreground: '#ffffff',
       border: '#ffffff',
     },
+    typography: {
+      fontFamily: 'monospace',
+    },
+    shape: {
+      borderRadius: 0,
+    },
   },
 })
 ```
 
-Appearance colors use six-digit hexadecimal values. Inttegro keeps layout,
-payment-method branding, validation, and accessible interaction states under
-the hosted Checkout's control.
+Appearance colors use six-digit hexadecimal values. `fontFamily` accepts the
+safe `sans-serif` and `monospace` system stacks. `borderRadius` is expressed in
+pixels from 0 through 24. Inttegro keeps layout, payment-method branding,
+validation, and accessible interaction states under the hosted Checkout's
+control.
 
 You can change presentation settings without replacing Checkout or discarding payer progress:
 
